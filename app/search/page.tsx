@@ -1,25 +1,27 @@
-import { Suspense } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { ArrowLeft, ExternalLink, Music } from "lucide-react"
-import { searchSongs } from "@/lib/genius"
+// app/search/page.tsx
 
+import { Suspense } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { ArrowLeft, ExternalLink, Music } from "lucide-react";
+import { searchSongs } from "@/lib/genius";
 
-export default function SearchPage({
-  searchParams,
-}: {
-  searchParams: { q?: string }
-}) {
-  // Fix: Make sure q is optional and handle it safely
-  const query = searchParams?.q || ""
+export interface PageProps {
+  searchParams?: { q?: string };
+}
+
+export default function SearchPage({ searchParams }: PageProps) {
+  const query = searchParams?.q?.trim() || "";
 
   return (
     <div className="flex flex-col min-h-screen">
       <header className="bg-gradient-to-r from-purple-700 to-pink-600 py-6">
         <div className="container mx-auto px-4">
           <Link href="/">
-            <h1 className="text-3xl font-bold text-white">Melovia</h1>
+            <h1 className="text-3xl font-bold text-white cursor-pointer">
+              Melovia
+            </h1>
           </Link>
         </div>
       </header>
@@ -33,7 +35,8 @@ export default function SearchPage({
             </Button>
           </Link>
           <h2 className="text-2xl font-semibold ml-4">
-            Search Results for: <span className="text-purple-600">{query}</span>
+            Search Results for:{" "}
+            <span className="text-purple-600">{query || "..."}</span>
           </h2>
         </div>
 
@@ -49,37 +52,42 @@ export default function SearchPage({
         </div>
       </footer>
     </div>
-  )
+  );
 }
-
-// Add debugging to the SearchResults component to help diagnose issues
 
 async function SearchResults({ query }: { query: string }) {
   if (!query) {
-    return <p>Please enter a search term</p>
+    return (
+      <div className="text-center py-12">
+        <h3 className="text-xl font-medium mb-2">No query provided</h3>
+        <p className="text-gray-600">Please enter a search term.</p>
+      </div>
+    );
   }
 
   try {
-    const results = await searchSongs(query)
-    console.log(`Found ${results.length} results for query: ${query}`)
+    const results = await searchSongs(query);
+    console.log(`Found ${results.length} results for query: "${query}"`);
 
-    if (!results.length) {
+    if (results.length === 0) {
       return (
         <div className="text-center py-12">
           <h3 className="text-xl font-medium mb-2">No results found</h3>
-          <p className="text-gray-600">Try searching with different keywords</p>
+          <p className="text-gray-600">
+            Try searching with different keywords.
+          </p>
         </div>
-      )
+      );
     }
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {results.map((song) => (
           <Card key={song.id} className="overflow-hidden flex flex-col">
-            <div className="aspect-square relative bg-gray-100">
+            <div className="aspect-square bg-gray-100 relative">
               {song.song_art_image_url ? (
                 <img
-                  src={song.song_art_image_url || "/placeholder.svg"}
+                  src={song.song_art_image_url}
                   alt={`${song.title} by ${song.primary_artist.name}`}
                   className="w-full h-full object-cover"
                 />
@@ -106,23 +114,23 @@ async function SearchResults({ query }: { query: string }) {
           </Card>
         ))}
       </div>
-    )
+    );
   } catch (error) {
-    console.error("Error in search results:", error)
+    console.error("Error fetching search results:", error);
     return (
       <div className="text-center py-12">
         <h3 className="text-xl font-medium mb-2">Error fetching results</h3>
-        <p className="text-gray-600">Please try again later</p>
+        <p className="text-gray-600">Please try again later.</p>
       </div>
-    )
+    );
   }
 }
 
 function SearchResultsSkeleton() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {[...Array(6)].map((_, i) => (
-        <Card key={i} className="overflow-hidden">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <Card key={index} className="overflow-hidden">
           <div className="aspect-square bg-gray-200 animate-pulse" />
           <CardContent className="p-4">
             <div className="h-6 bg-gray-200 rounded animate-pulse mb-2" />
@@ -134,5 +142,5 @@ function SearchResultsSkeleton() {
         </Card>
       ))}
     </div>
-  )
+  );
 }
