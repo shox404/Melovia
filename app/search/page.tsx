@@ -1,5 +1,3 @@
-// app/search/page.tsx
-
 import { Suspense } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
