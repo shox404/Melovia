@@ -10,7 +10,8 @@ interface SongPageProps {
   }
 }
 
-export async function generateMetadata({ params }: SongPageProps): Promise<Metadata> {
+export async function generateMetadata(props: Promise<SongPageProps>): Promise<Metadata> {
+  const { params } = await props
   try {
     const song = await getSongDetails(params.id)
     return {
